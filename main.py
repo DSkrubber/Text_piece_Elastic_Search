@@ -29,6 +29,11 @@ class TextPiece(BaseModel):
         return name
 
 
+@app.get("/")
+async def index():
+    return {"Hello": "All"}
+
+
 @app.get("/pieces/{piece_id}")
 async def read_root(piece_id: str):
     return loads(DB[piece_id].json())

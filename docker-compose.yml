@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  web:
+    container_name: fast_api
+    build: .
+    command: uvicorn --reload main:app --host 0.0.0.0 --port 8000
+    ports:
+      - 5000:8000
+    volumes:
+      - ./:/fastapi_app
+    depends_on:
+      - elastic
+  elastic:
+    container_name: elastic_search
+    image: elasticsearch:7.14.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+      - 9300:9300
