@@ -7,7 +7,6 @@ from fastapi import Body, FastAPI
 from pydantic import BaseModel, validator
 
 es = Elasticsearch(hosts="elasticsearch:9200")
-# es = Elasticsearch(hosts="localhost:9200")
 app = FastAPI()
 
 
@@ -110,5 +109,6 @@ def get_item(*, query: Query = Body(..., examples=queries)):
 
 
 def search_maker(query: dict) -> dict:
+    """Helper function to prepare valid search dict object from query"""
     search_fields = [{"match": {key: val}} for key, val in query.items() if val]
     return {"bool": {"must": search_fields}}
