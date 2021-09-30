@@ -9,12 +9,13 @@ services:
     volumes:
       - ./:/fastapi_app
     depends_on:
-      - elastic
-  elastic:
-    container_name: elastic_search
+      - elasticsearch
+  elasticsearch:
+    container_name: elasticsearch
     image: elasticsearch:7.14.1
     environment:
       - discovery.type=single-node
+#      - xpack.security.enabled=true
     ports:
       - 9200:9200
       - 9300:9300
