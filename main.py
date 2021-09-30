@@ -63,17 +63,52 @@ examples = {
     },
 }
 
-query = {"match": {"text": "Some"}}
+
+queries = {
+    "found_2_items": {
+        "summary": "Query to find 2 text pieces",
+        "value": {"text": "functionality"},
+    },
+    "found_1_item": {
+        "summary": "Query to find 1 text piece",
+        "value": {
+            "text": "functionality",
+            "type": "paragraph",
+        },
+    },
+    "not_found": {
+        "summary": "Query to find 0 text pieces",
+        "value": {
+            "page_number": -10,
+        },
+    },
+    "all": {"summary": "Query to find all text pieces", "value": {}},
+}
 
 
-@app.put("/send")
+class Query(BaseModel):
+    text: Optional[str]
+    piece_id: Optional[UUID]
+    type: Optional[str]
+    page_number: Optional[int]
+    document_name: Optional[str]
+
+
+@app.put("/save")
 async def add_item(*, item: TextPiece = Body(..., examples=examples)):
     doc = item.json()
     res = es.index(index="job_id", id=item.piece_id, document=doc)
+    return f"Successfully indexed text piece with _id = {res['_id']}"
+
+
+@app.post("/search")
+def get_item(*, query: Query = Body(..., examples=queries)):
+    raw_query = query.dict()
+    search = search_maker(raw_query)
+    res = es.search(index="job_id", _source=False, query=search)
     return res
 
 
-@app.get("/load")
-def get_item():
-    res = es.search(index="job_id", _source=False, query=query)
-    return res
+def search_maker(query: dict) -> dict:
+    search_fields = [{"match": {key: val}} for key, val in query.items() if val]
+    return {"bool": {"must": search_fields}}
