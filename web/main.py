@@ -1,15 +1,8 @@
-from elasticsearch import Elasticsearch
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .constants import (
-    DOCUMENTS_ROUTES,
-    ENTITIES_TAG,
-    ES_HOST,
-    TAGS,
-    TEXT_PIECES_ROUTES,
-)
+from .constants import DOCUMENTS_ROUTES, ENTITIES_TAG, TAGS, TEXT_PIECES_ROUTES
 from .crud import (
     create_db_entity,
     delete_db_entity,
@@ -31,7 +24,6 @@ from .schemas import (
     TextPiecePatchSchema,
 )
 
-es = Elasticsearch(hosts=ES_HOST)
 app = FastAPI(
     title="Text pieces indexation and search",
     version="0.1.0",

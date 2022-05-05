@@ -4,16 +4,15 @@ from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv())
 
-ES_HOST = os.environ.get("ES_HOST", "elasticsearch:9200")
 
-APP_HOST = os.environ.get("APP_HOST", "127.0.0.1")
-APP_PORT = os.environ.get("APP_PORT", "5000")
+APP_HOST = os.environ.get("APP_HOST")
+APP_PORT = os.environ.get("APP_PORT")
 
-POSTGRES_USER = os.environ.get("POSTGRES_USER")
-POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.environ.get("POSTGRES_HOST")
-POSTGRES_PORT = os.environ.get("POSTGRES_PORT")
-POSTGRES_DB = os.environ.get("POSTGRES_DB")
+POSTGRES_USER = os.environ.get("POSTGRES_USER", "admin")
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "admin")
+POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = os.environ.get("POSTGRES_PORT", 5432)
+POSTGRES_DB = os.environ.get("POSTGRES_DB", "postgres")
 
 DOCUMENTS_ROUTES = "/documents"
 TEXT_PIECES_ROUTES = "/text_pieces"
