@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Hashable, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -71,7 +71,7 @@ class TextPieceInSchema(BaseModel):
         description="Must be already saved in database",
         example="Interesting book",
     )
-    meta_data: Optional[Dict[Hashable, Any]] = Field(
+    meta_data: Optional[dict] = Field(  # type: ignore
         None, example={"property": "value"}
     )
 
@@ -104,6 +104,6 @@ class TextPiecePatchSchema(BaseModel):
         description="Must be already saved in database",
         example="Interesting book",
     )
-    meta_data: Optional[Dict[Hashable, Any]] = Field(
+    meta_data: Optional[dict] = Field(  # type: ignore
         None, example={"property": "value"}
     )
