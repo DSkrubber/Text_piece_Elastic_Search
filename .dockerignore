@@ -65,7 +65,6 @@ docs/_build/
 **/*.swp
 
 # Environments
-.env
 .venv
 env/
 venv/

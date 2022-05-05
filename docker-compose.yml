@@ -1,21 +1,66 @@
 version: "3.9"
+
 services:
   web:
-    container_name: fast_api
-    build: .
-    command: uvicorn --reload main:app --host 0.0.0.0 --port 8000
+    container_name: web
+    image: text_finder
+    env_file:
+      - .env
     ports:
-      - 5000:8000
-    volumes:
-      - ./:/fastapi_app
+      - ${APP_PORT:-8080}:${APP_PORT:-8080}
     depends_on:
-      - elasticsearch
+      postgresql:
+        condition: service_healthy
+    networks:
+      - text_piece_finder
+    volumes:
+      - ./web:/opt/text_finder/web
+      - ./alembic:/opt/text_finder/alembic
+
+  postgresql:
+    image: postgres:13.4
+    container_name: postgresql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-"admin"}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-"admin"}
+      - POSTGRES_DB=${POSTGRES_DB:-"postgres"}
+    ports:
+      - ${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - text_piece_finder
+
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:7.14.1
     environment:
+      - xpack.security.enabled=false
       - discovery.type=single-node
-#      - xpack.security.enabled=true
+    deploy:
+      resources:
+        limits:
+          cpus: 0.50
+          memory: 500M
+    restart: always
+    healthcheck:
+      test: curl --fail http://localhost:9200 || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     ports:
-      - 9200:9200
-      - 9300:9300
+      - ${ES_PORT:-9200}:${ES_PORT:-9200}
+    networks:
+      - text_piece_finder
+
+networks:
+  text_piece_finder:
+    driver: bridge
