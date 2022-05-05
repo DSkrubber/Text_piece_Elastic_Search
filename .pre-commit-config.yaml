@@ -29,7 +29,7 @@ repos:
       - --scripts-are-modules
       - --allow-untyped-decorators
       - --strict
-      exclude: tests/|documentation/
+      exclude: tests/|alembic/
       additional_dependencies:
         - "pydantic"
   - repo: https://github.com/commitizen-tools/commitizen
