@@ -37,11 +37,17 @@ class TextPieceType(str, Enum):
     paragraph = "paragraph"
 
 
-class DocumentSchema(BaseModel):
+class DocumentInSchema(BaseModel):
     """Declares fields for document object"""
 
     name: str = Field(..., min_length=1, example="Interesting book")
     author: str = Field(..., example="John Doe")
+
+
+class DocumentOutSchema(DocumentInSchema):
+    """Declares fields for document object"""
+
+    document_id: int = Field(..., example=1)
 
     class Config:
         orm_mode = True

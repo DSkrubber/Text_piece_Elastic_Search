@@ -16,8 +16,9 @@ from .models import Document, TextPiece
 from .schemas import (
     BadRequestErrorSchema,
     ConnectionErrorSchema,
+    DocumentInSchema,
+    DocumentOutSchema,
     DocumentPatchSchema,
-    DocumentSchema,
     NotFoundErrorSchema,
     TextPieceInSchema,
     TextPieceOutSchema,
@@ -39,7 +40,7 @@ main_logger = get_logger(__name__)
 @app.post(
     DOCUMENTS_ROUTES,
     status_code=status.HTTP_201_CREATED,
-    response_model=DocumentSchema,
+    response_model=DocumentOutSchema,
     responses={
         400: {"model": BadRequestErrorSchema},
         500: {"model": ConnectionErrorSchema},
@@ -48,20 +49,20 @@ main_logger = get_logger(__name__)
     summary="Save new document in database.",
 )
 def post_document(
-    document: DocumentSchema, session: Session = Depends(get_db)
-) -> DocumentSchema:
+    document: DocumentInSchema, session: Session = Depends(get_db)
+) -> DocumentOutSchema:
     """Name of saved document should be unique. There will be also index
     created in ElasticSearch to store all related to this document text pieces.
     """
-    create_db_entity(session, document, Document)
-    main_logger.info(f"Document with '{document.name} was created")
-    return document
+    document_db = create_db_entity(session, document, Document)
+    main_logger.info(f"Document with '{document.name}' name was created")
+    return DocumentOutSchema.from_orm(document_db)
 
 
 @app.get(
     DOCUMENTS_ROUTES + "/{document_name}",
     status_code=status.HTTP_200_OK,
-    response_model=DocumentSchema,
+    response_model=DocumentOutSchema,
     responses={
         404: {"model": NotFoundErrorSchema},
         500: {"model": ConnectionErrorSchema},
@@ -72,18 +73,18 @@ def post_document(
 def get_document(
     document_name: str = Path(..., example="Interesting book"),
     session: Session = Depends(get_db),
-) -> DocumentSchema:
+) -> DocumentOutSchema:
     document_db = get_db_entity(session, document_name, Document)
     if not document_db:
         error_message = f"Document with '{document_name}' name was not found."
         main_logger.error(error_message)
         raise HTTPException(status_code=404, detail=error_message)
-    return DocumentSchema.from_orm(document_db)
+    return DocumentOutSchema.from_orm(document_db)
 
 
 @app.patch(
     DOCUMENTS_ROUTES + "/{document_name}",
-    response_model=DocumentSchema,
+    response_model=DocumentOutSchema,
     responses={
         400: {"model": BadRequestErrorSchema},
         404: {"model": NotFoundErrorSchema},
@@ -96,7 +97,7 @@ def patch_document(
     new_data: DocumentPatchSchema,
     document_name: str = Path(..., example="Interesting book"),
     session: Session = Depends(get_db),
-) -> DocumentSchema:
+) -> DocumentOutSchema:
     """Null as fields value is not allowed."""
     new_data_dict = new_data.dict(exclude_none=True)
     if not new_data_dict:
@@ -110,7 +111,7 @@ def patch_document(
         raise HTTPException(status_code=404, detail=error_message)
     patched_document = modify_db_entity(session, document_db, new_data_dict)
     main_logger.info(f"Document with '{document_db.name} name was patched")
-    return DocumentSchema.from_orm(patched_document)
+    return DocumentOutSchema.from_orm(patched_document)
 
 
 @app.delete(

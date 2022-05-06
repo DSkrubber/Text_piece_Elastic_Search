@@ -17,7 +17,8 @@ from .schemas import TextPieceType
 class Document(Base):  # type: ignore
     __tablename__ = "documents"
 
-    name = Column(VARCHAR, primary_key=True)
+    document_id = Column(INTEGER, primary_key=True)
+    name = Column(VARCHAR, nullable=False, unique=True)
     author = Column(VARCHAR, nullable=False, index=True)
     text_pieces = relationship(
         "TextPiece",
