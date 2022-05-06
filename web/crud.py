@@ -5,14 +5,14 @@ from sqlalchemy.orm import Session
 from .database import Base
 from .logger import get_logger
 from .models import Document, TextPiece
-from .schemas import DocumentSchema, TextPieceInSchema
+from .schemas import DocumentInSchema, TextPieceInSchema
 
 database_logger = get_logger(__name__)
 
 
 def create_db_entity(
     session: Session,
-    entity: Union[DocumentSchema, TextPieceInSchema],
+    entity: Union[DocumentInSchema, TextPieceInSchema],
     model: Base,
     **kwargs: int,
 ) -> Union[Document, TextPiece]:

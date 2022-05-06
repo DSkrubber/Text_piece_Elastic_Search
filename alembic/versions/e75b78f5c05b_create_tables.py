@@ -27,9 +27,11 @@ class TextPieceType(str, Enum):
 def upgrade():
     op.create_table(
         "documents",
+        sa.Column("document_id", sa.INTEGER(), nullable=False),
         sa.Column("name", sa.VARCHAR(), nullable=False),
         sa.Column("author", sa.VARCHAR(), nullable=False),
-        sa.PrimaryKeyConstraint("name"),
+        sa.PrimaryKeyConstraint("document_id"),
+        sa.UniqueConstraint("name"),
     )
     op.create_index(
         op.f("ix_documents_author"), "documents", ["author"], unique=False
