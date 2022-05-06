@@ -1,3 +1,4 @@
+from elasticsearch.exceptions import ApiError, RequestError, TransportError
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -10,7 +11,15 @@ from .crud import (
     modify_db_entity,
 )
 from .database import get_db
-from .errors import dbapi_exception_handler, sqlalchemy_exception_handler
+from .errors import (
+    dbapi_exception_handler,
+    es_api_exception_handler,
+    es_request_exception_handler,
+    es_transport_exception_handler,
+    sqlalchemy_exception_handler,
+)
+from .es import get_es_client
+from .es_utils import create_index
 from .logger import get_logger
 from .models import Document, TextPiece
 from .schemas import (
@@ -33,8 +42,22 @@ app = FastAPI(
 
 app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(DBAPIError, dbapi_exception_handler)
+app.add_exception_handler(TransportError, es_transport_exception_handler)
+app.add_exception_handler(ApiError, es_api_exception_handler)
+app.add_exception_handler(RequestError, es_request_exception_handler)
 
 main_logger = get_logger(__name__)
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    get_es_client()
+
+
+@app.on_event("shutdown")
+async def app_shutdown() -> None:
+    es_client = get_es_client()
+    es_client.close()
 
 
 @app.post(
@@ -56,6 +79,10 @@ def post_document(
     """
     document_db = create_db_entity(session, document, Document)
     main_logger.info(f"Document with '{document.name}' name was created")
+    es_client = get_es_client()
+    if es_client:
+        create_index(es_client, document_db.document_id)
+        main_logger.info(f"Index {document_db.document_id} was created")
     return DocumentOutSchema.from_orm(document_db)
 
 
