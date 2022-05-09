@@ -150,6 +150,8 @@ class CountableOperator(str, Enum):
 
 
 SearchFilterSchemaValue = Union[int, str, List[Union[int, str]]]
+TEXT_FIELD_NAMES = TextField.text, TextField.document_name
+TYPES_VALUES = TextPieceType.title, TextPieceType.paragraph
 
 
 class SearchFilterSchema(BaseModel):
@@ -194,10 +196,7 @@ class SearchFilterSchema(BaseModel):
         fields.
         """
         field, operator = values.get("field"), values.get("operator")
-        if (
-            field not in (TextField.text, TextField.document_name)
-            and operator == TextOperator.match
-        ):
+        if field not in TEXT_FIELD_NAMES and operator == TextOperator.match:
             raise ValueError(
                 "match can be used with text and document_name fields only."
             )
@@ -219,10 +218,7 @@ class SearchFilterSchema(BaseModel):
     ) -> Dict[str, SearchFilterSchemaValue]:
         """Type field may contain only title or paragraph values"""
         field, value = values.get("field"), values.get("value")
-        if field == TextField.type and value not in (
-            TextPieceType.title,
-            TextPieceType.paragraph,
-        ):
+        if field == TextField.type and value not in TYPES_VALUES:
             raise ValueError("Type may be either 'title' or 'paragraph' only")
         return values
 
