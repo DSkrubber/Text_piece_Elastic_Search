@@ -127,7 +127,7 @@ def build_query(request_body: SearchQuerySchema) -> SearchQuery:
 
 def search_pieces(
     es_client: Elasticsearch, index_name: int, query_body: SearchQuerySchema
-) -> Iterable[Tuple[int, Dict[str, Union[int, str]]]]:
+) -> Tuple[int, Iterable[Dict[str, Any]]]:
     es_query = build_query(query_body)
     try:
         total = es_client.count(index=str(index_name))["count"]
