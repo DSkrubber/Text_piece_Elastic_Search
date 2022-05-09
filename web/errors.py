@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
 from .crud import database_logger
+from .es import es_logger
 
 
 def sqlalchemy_exception_handler(
@@ -29,7 +30,7 @@ def dbapi_exception_handler(
 def es_transport_exception_handler(
     request: Request, error: TransportError
 ) -> JSONResponse:
-    database_logger.error(error)
+    es_logger.error(error)
     return JSONResponse(
         status_code=500,
         content={"detail": f"Error: ElasticSearch transport error ({error})"},
@@ -39,7 +40,7 @@ def es_transport_exception_handler(
 def es_api_exception_handler(
     request: Request, error: ApiError
 ) -> JSONResponse:
-    database_logger.error(error)
+    es_logger.error(error)
     return JSONResponse(
         status_code=500,
         content={"detail": f"Error: ElasticSearch API error ({error})"},
@@ -49,7 +50,7 @@ def es_api_exception_handler(
 def es_request_exception_handler(
     request: Request, error: RequestError
 ) -> JSONResponse:
-    database_logger.error(error)
+    es_logger.error(error)
     return JSONResponse(
         status_code=500,
         content={"detail": f"Error: ElasticSearch Request error ({error})"},
