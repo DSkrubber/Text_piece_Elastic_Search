@@ -39,6 +39,11 @@ MAPPINGS = {
         "document_name": {
             "type": "text",
             "analyzer": "standard",
+            "fields": {
+                "keyword": {
+                    "type": "keyword",
+                },
+            },
         },
         "size": {
             "type": "unsigned_long",
