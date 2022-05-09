@@ -19,6 +19,7 @@ POSTGRES_DB = os.environ.get("POSTGRES_DB", "postgres")
 
 DOCUMENTS_ROUTES = "/documents"
 TEXT_PIECES_ROUTES = "/text_pieces"
+ELASTICSEARCH_ROUTES = "/index"
 
 ENTITIES_TAG = "Documents and text pieces"
 ELASTICSEARCH_TAG = "Elasticsearch"
