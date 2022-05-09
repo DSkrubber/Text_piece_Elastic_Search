@@ -89,6 +89,7 @@ def build_query(request_body: SearchQuerySchema) -> SearchQuery:
         "from": from_,
         "size": page_size,
         "query": {},
+        "sort": ["_score", {"created_at": "asc"}],
     }
     query_filters = request_body.filters
     if not query_filters:
@@ -130,7 +131,9 @@ def search_pieces(
     es_query = build_query(query_body)
     try:
         total = es_client.count(index=str(index_name))["count"]
-        data = helpers.scan(es_client, query=es_query, index=index_name)
+        data = helpers.scan(
+            es_client, query=es_query, index=index_name, preserve_order=True
+        )
         return total, data
     except RequestError as error:
         es_logger.error(f"Error: ElasticSearch search error: {error}")
