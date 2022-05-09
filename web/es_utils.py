@@ -15,7 +15,7 @@ from .schemas import (
 )
 
 
-def create_index(es_client: Elasticsearch, index_name: int) -> None:
+def create_index(es_client: Elasticsearch, index_name: str) -> None:
     if not es_client.indices.exists(index=index_name):
         try:
             es_client.indices.create(

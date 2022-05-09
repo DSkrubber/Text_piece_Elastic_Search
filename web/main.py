@@ -95,7 +95,7 @@ def post_document(
     document_db = create_db_entity(session, document, Document)
     main_logger.info(f"Document with '{document.name}' name was created")
     if es_client:
-        create_index(es_client, document_db.document_id)
+        create_index(es_client, str(document_db.document_id))
         main_logger.info(f"Index {document_db.document_id} was created")
     return DocumentOutSchema.from_orm(document_db)
 
@@ -350,7 +350,7 @@ def search_document_pieces(
     order. Returns pagination parameters (including total number of text pieces
     matching query) and "data" field with list of text pieces.
     """
-    if not es_client.indices.exists(index=index_name):
+    if not es_client.indices.exists(index=str(index_name)):
         error_message = f"Index '{index_name}' was not found."
         main_logger.error(error_message)
         raise HTTPException(status_code=404, detail=error_message)
