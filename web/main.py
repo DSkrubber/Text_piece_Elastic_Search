@@ -1,6 +1,6 @@
 from typing import Optional
 
-from elasticsearch import Elasticsearch
+from elasticsearch import AsyncElasticsearch
 from elasticsearch.exceptions import ApiError, RequestError, TransportError
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
@@ -63,13 +63,13 @@ main_logger = get_logger(__name__)
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    get_es_client()
+    await get_es_client()
 
 
 @app.on_event("shutdown")
 async def app_shutdown() -> None:
-    es_client = get_es_client()
-    es_client.close()
+    es_client = await get_es_client()
+    await es_client.close()
 
 
 @app.post(
@@ -83,10 +83,10 @@ async def app_shutdown() -> None:
     tags=[ENTITIES_TAG],
     summary="Save new document in database and create elasticsearch index.",
 )
-def post_document(
+async def post_document(
     document: DocumentInSchema,
     session: Session = Depends(get_db),
-    es_client: Optional[Elasticsearch] = Depends(get_es_client),
+    es_client: Optional[AsyncElasticsearch] = Depends(get_es_client),
 ) -> DocumentOutSchema:
     """Name of saved document should be unique. There will be also index
     created in ElasticSearch to store all related to this document text pieces.
@@ -95,7 +95,7 @@ def post_document(
     document_db = create_db_entity(session, document, Document)
     main_logger.info(f"Document with '{document.name}' name was created")
     if es_client:
-        create_index(es_client, str(document_db.document_id))
+        await create_index(es_client, str(document_db.document_id))
         main_logger.info(f"Index {document_db.document_id} was created")
     return DocumentOutSchema.from_orm(document_db)
 
@@ -297,10 +297,10 @@ def delete_text_piece(
     tags=[ELASTICSEARCH_TAG],
     summary="Start indexation of all text pieces related to index_name.",
 )
-def index_document_pieces(
+async def index_document_pieces(
     index_name: int = Path(..., example=1),
     session: Session = Depends(get_db),
-    es_client: Optional[Elasticsearch] = Depends(get_es_client),
+    es_client: Optional[AsyncElasticsearch] = Depends(get_es_client),
 ) -> Response:
     """Index_name equals to document_id. All existing documents for
     "index_name" will be deleted before indexation.
@@ -313,7 +313,7 @@ def index_document_pieces(
     document_pieces = document_db.text_pieces
     for document_piece in document_pieces:
         document_piece.indexed = True
-    start_document_indexation(
+    await start_document_indexation(
         es_client, document_db.document_id, document_pieces
     )
     session.commit()
@@ -330,10 +330,10 @@ def index_document_pieces(
     tags=[ELASTICSEARCH_TAG],
     summary="Search indexed text pieces for index_name with pagination.",
 )
-def search_document_pieces(
+async def search_document_pieces(
     query_body: SearchQuerySchema,
     index_name: int = Path(..., example=1),
-    es_client: Optional[Elasticsearch] = Depends(get_es_client),
+    es_client: Optional[AsyncElasticsearch] = Depends(get_es_client),
 ) -> SearchResultSchema:
     """Support pagination (page_num and page_size), if no pagination parameters
     specified - returns first 15 results. In filters you should specify list of
@@ -354,11 +354,11 @@ def search_document_pieces(
         error_message = f"Index '{index_name}' was not found."
         main_logger.error(error_message)
         raise HTTPException(status_code=404, detail=error_message)
-    total, search_result = search_pieces(es_client, index_name, query_body)
+    total, data = await search_pieces(es_client, index_name, query_body)
     response = {
         "page_num": query_body.pagination.page_num,
         "page_size": query_body.pagination.page_size,
         "total": total,
-        "data": [document["_source"] for document in search_result],
+        "data": data,
     }
     return SearchResultSchema.parse_obj(response)
