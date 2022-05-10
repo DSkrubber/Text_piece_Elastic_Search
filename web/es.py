@@ -1,6 +1,6 @@
 from typing import List
 
-from elasticsearch import Elasticsearch
+from elasticsearch import AsyncElasticsearch
 from elasticsearch.exceptions import ApiError, TransportError
 
 from .constants import ES_HOST, ES_PORT
@@ -71,13 +71,13 @@ MAPPINGS = {
 }
 ES_URL = f"{ES_HOST}:{ES_PORT}"
 
-ES_CLIENTS: List[Elasticsearch] = []
+ES_CLIENTS: List[AsyncElasticsearch] = []
 
 
-def get_es_client() -> Elasticsearch:
+async def get_es_client() -> AsyncElasticsearch:
     if not ES_CLIENTS:
         try:
-            ES_CLIENTS.append(Elasticsearch(hosts=ES_URL))
+            ES_CLIENTS.append(AsyncElasticsearch(hosts=ES_URL))
             es_logger.info("ElasticSearch client connected successfully")
         except (TransportError, ApiError) as error:
             es_logger.error(f"Error: ElasticSearch connection error: {error}")
