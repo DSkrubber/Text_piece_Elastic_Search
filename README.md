@@ -114,14 +114,17 @@ For managing migrations this project uses [alembic](https://alembic.sqlalchemy.o
 
 
 4) Use resources with `/documents` prefix to create, read, update and delete data in `documents` database table. 
+   ![/documents/all](https://user-images.githubusercontent.com/79688463/167624953-53c9b057-164d-400e-945e-ed5377a1eb8f.png)
 
 
 6) To create document you should provide values for "document_name" (must be unique) and "author". Document entity also 
    has "document_id" - Primary key for database table, that returns as part of successful response. There will be also 
    ElasticSearch index created (if not exists) for which "index_name" equals to created "document_id".
+   ![/documents/add](https://user-images.githubusercontent.com/79688463/167624959-bde64ca6-aed9-4a60-859b-656b358e47ea.png)
 
 
 7) Use resources with `/text_pieces` prefix to create, read, update and delete data in `text_pieces` database table.
+   ![/text_pieces/all](https://user-images.githubusercontent.com/79688463/167625084-a83784f9-3419-471d-945d-44987b162201.png)
 
 
 8) Each request to create new text_piece should be provided with following data in request body:
@@ -136,9 +139,11 @@ For managing migrations this project uses [alembic](https://alembic.sqlalchemy.o
    - `indexed` - boolean value that show whether text piece was already indexed or not,
    - `size` - calculated length of `text` field of text piece.
    - `created_at` - timestamp for text piece object entity creation time in database. datetime.datetime() object.
+   ![/text_pieces/add](https://user-images.githubusercontent.com/79688463/167624969-87eecad2-2d6d-41a8-bcd9-972280e1c0a0.png)  
 
 
 9) Use resources with `/index` prefix to index and search for text pieces in Elasticsearch indices.
+   ![/index/all](https://user-images.githubusercontent.com/79688463/167625090-542bf165-9d45-45f1-b420-d1fd8f623833.png)  
 
 
 10) Request to `/index/{index_name}/index` resource will check that index with name (`document_id`) exists in ElasticSearch.
@@ -158,7 +163,7 @@ For managing migrations this project uses [alembic](https://alembic.sqlalchemy.o
     - `indexed` - has `eq` and accepts only `true` or `false` values. 
     
     Available countable fields for search are:
-    - `page` - with operators: `eq`, `in` (array of possible values - will return result if at least one value matches) and comparations: `gt`, `gte`, `lt`, `lte`
+    - `page`,
     - `size`, 
     - `created_at`. 
 
@@ -168,10 +173,11 @@ For managing migrations this project uses [alembic](https://alembic.sqlalchemy.o
     If no filters provided - returns all documents in index with `index_name`. 
 
     *Note: Order results by descending `score` value (if `match` is used) and then by `created_at` timestamp in ascending
-    order. 
+    order.*
    
     Returns pagination parameters (including `page_num`, `page_size` and `total` - with total number of text pieces
     matching query) and `data` field with list of matching text pieces in response body.
+   ![/index/search](https://user-images.githubusercontent.com/79688463/167624973-a27528c5-c0fb-4e1b-acb1-f828e97bb1a7.png)  
 
 
 ### Running tests.
