@@ -75,6 +75,12 @@ ES_CLIENTS: List[AsyncElasticsearch] = []
 
 
 async def get_es_client() -> AsyncElasticsearch:
+    """Creates new AsyncElasticsearch connection client instance.
+
+     Appends created client to ES_CLIENTS global list. If client already exists
+     in ES_CLIENTS - returns it without creation of new one.
+    :return: AsyncElasticsearch client instance.
+    """
     if not ES_CLIENTS:
         try:
             ES_CLIENTS.append(AsyncElasticsearch(hosts=ES_URL))

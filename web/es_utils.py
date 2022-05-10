@@ -25,6 +25,12 @@ from .schemas import (
 
 
 async def create_index(es_client: AsyncElasticsearch, index_name: str) -> None:
+    """Use AsyncElasticsearch client to create new index in ES with index_name.
+
+    :param es_client: AsyncElasticsearch client instance connected to ES.
+    :param index_name: name of index to create.
+    :return: None.
+    """
     if not await es_client.indices.exists(index=index_name):
         try:
             await es_client.indices.create(
@@ -42,6 +48,12 @@ async def create_index(es_client: AsyncElasticsearch, index_name: str) -> None:
 async def delete_old_pieces(
     es_client: AsyncElasticsearch, index_name: int
 ) -> Optional[AsyncIterator[Dict[str, Union[str, int]]]]:
+    """Modifies all documents from index (index_name) for future bulk delete.
+
+    :param es_client: AsyncElasticsearch client instance connected to ES.
+    :param index_name: name of index to delete documents from.
+    :return: AsyncIterator with objects data - prepared to bulk delete.
+    """
     es_query = {"query": {"match_all": {}}}  # type: ignore
     objects_to_delete = helpers.async_scan(
         client=es_client,
@@ -59,6 +71,12 @@ async def delete_old_pieces(
 async def index_new_pieces(
     index_name: int, document_pieces: Iterable[TextPiece]
 ) -> Optional[AsyncIterator[Dict[str, Union[str, int]]]]:
+    """Prepare documents for bulk indexation in ES index (index_name).
+
+    :param index_name: name of index to save documents.
+    :param document_pieces:
+    :return: AsyncIterator with objects data - prepared to bulk indexation.
+    """
     for text_piece in document_pieces:
         piece_id = text_piece.piece_id
         text_piece_schema = TextPieceOutSchema.from_orm(text_piece)
@@ -74,6 +92,14 @@ async def start_document_indexation(
     index_name: int,
     document_pieces: Iterable[TextPiece],
 ) -> None:
+    """Index prepared documents with text pieces data in ES index (index_name).
+
+    Before indexation deletes all existing documents from index.
+    :param es_client: AsyncElasticsearch client instance connected to ES.
+    :param index_name: name of index to save documents.
+    :param document_pieces: Iterable with text pieces data for indexation.
+    :return: None.
+    """
     try:
         await helpers.async_bulk(
             es_client, delete_old_pieces(es_client, index_name)
@@ -95,6 +121,14 @@ BoolQuery = Dict[str, Dict[str, List[Any]]]
 
 
 async def build_query(request_body: SearchQuerySchema) -> SearchQuery:
+    """Construct query to elasticsearch with provided request_body.
+
+     Modifies default query according to fields, operators and values from
+     request schema and business logic constraints.
+
+    :param request_body: dict with request query information.
+    :return: dict with prepared query to ES.
+    """
     page_num = request_body.pagination.page_num
     page_size = request_body.pagination.page_size
     from_ = (page_num - 1) * page_size
@@ -143,6 +177,16 @@ async def search_pieces(
     index_name: int,
     query_body: SearchQuerySchema,
 ) -> Tuple[int, Iterable[Dict[str, Any]]]:
+    """Build query to ES from query_body and async searches for text pieces.
+
+    in addition to Iterable with data of pagination number of text pieces also
+    returns "total" number of documents that match request query.
+
+    :param es_client: AsyncElasticsearch client instance connected to ES.
+    :param index_name: name of index to search documents into.
+    :param query_body: dict with request query information.
+    :return: total number of matching documents and pagination number of data.
+    """
     es_query = await build_query(query_body)
     try:
         total = await es_client.count(index=str(index_name))
