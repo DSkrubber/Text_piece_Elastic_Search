@@ -38,14 +38,12 @@ class TextPieceType(str, Enum):
 
 
 class DocumentInSchema(BaseModel):
-    """Declares fields for document object"""
 
     name: str = Field(..., min_length=1, example="Interesting book")
     author: str = Field(..., example="John Doe")
 
 
 class DocumentOutSchema(DocumentInSchema):
-    """Declares fields for document object"""
 
     document_id: int = Field(..., example=1)
 
@@ -54,13 +52,11 @@ class DocumentOutSchema(DocumentInSchema):
 
 
 class DocumentPatchSchema(BaseModel):
-    """Declares fields for document object"""
 
     author: Optional[str] = Field(None, example="Jules Verne")
 
 
 class TextPieceInSchema(BaseModel):
-    """Declares fields for text piece object"""
 
     text: str = Field(
         ..., min_length=1, example="Some text for testing functionality."
@@ -93,7 +89,6 @@ class TextPieceOutSchema(TextPieceInSchema):
 
 
 class TextPiecePatchSchema(BaseModel):
-    """Declares fields for text piece object"""
 
     text: Optional[str] = Field(
         None, min_length=1, example="Some text for testing functionality."

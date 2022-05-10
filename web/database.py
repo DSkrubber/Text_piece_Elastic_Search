@@ -26,6 +26,11 @@ Base = declarative_base()
 
 
 def get_db() -> Iterator[sessionmaker]:
+    """Yields SessionLocal instance for resources via FastAPI Depends function.
+
+    Finally, closes connection to database.
+    :return: Iterator that yields SessionLocal instance.
+    """
     db = SessionLocal()
     try:
         yield db

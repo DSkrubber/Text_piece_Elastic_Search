@@ -63,11 +63,19 @@ main_logger = get_logger(__name__)
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    """Get existing or create new async ES client on application startup.
+
+    :return: AsyncElasticsearch client.
+    """
     await get_es_client()
 
 
 @app.on_event("shutdown")
 async def app_shutdown() -> None:
+    """Close async client connection to ES on application shutdown.
+
+    :return: Noe.
+    """
     es_client = await get_es_client()
     await es_client.close()
 
